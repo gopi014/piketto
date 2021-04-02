@@ -1,0 +1,48 @@
+#
+# Bucket for images
+#
+Resources:
+  S3ImagesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: ${self:custom.conf.imagesBucketName}
+      # BucketEncryption:
+      #   ServerSideEncryptionConfiguration:
+      #     - ServerSideEncryptionByDefault:
+      #         SSEAlgorithm: AES256
+      # no public access
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      # Set the CORS policy
+      CorsConfiguration:
+        CorsRules:
+          -
+            AllowedOrigins:
+              - '*'
+            AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+              - DELETE
+              - HEAD
+            MaxAge: 3000
+
+# export the name and arn of the bucket that is created
+Outputs:
+  s3ImagesBucketName:
+    Value:
+      Ref: S3ImagesBucket
+    Export:
+      Name: ${self:custom.conf.imagesBucketName}
+  s3ImagesBucketArn:
+    Value:
+      Fn::GetAtt:
+        - S3ImagesBucket
+        - Arn
+    Export:
+      Name: ${self:custom.conf.imagesBucketName}-arn

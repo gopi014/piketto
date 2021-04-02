@@ -1,0 +1,21 @@
+Resources:
+  CognitoAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    DependsOn:
+      - APIGWPikettoServices
+    Properties:
+      Name: CognitoAuthorizer
+      Type: COGNITO_USER_POOLS
+      IdentitySource: method.request.header.Authorization
+      RestApiId:
+        Ref: APIGWPikettoServices
+      ProviderARNs:
+        - arn:aws:cognito-idp:${self:provider.region}:${self:custom.conf.account_id}:userpool/ap-southeast-1_J8wW1RKK7
+      #   - arn of the cognito user pool to be updated here
+Outputs:
+  CognitoAuthorizer:
+    Description: Authorizer for Piketto Services
+    Value:
+      Ref: CognitoAuthorizer
+    Export:
+      Name: cgauth-piketto-services-${self:custom.conf.account_id}-${self:provider.stage}

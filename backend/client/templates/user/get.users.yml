@@ -1,0 +1,39 @@
+#
+# get user handler configuration and events
+#
+getuser:
+  handler: lambdas/users/get/get_users.handler
+  name: lambda-${self:custom.conf.api_name}-get-end-users-${self:custom.conf.stage}
+  description: 'lambda to get end user'
+  runtime: nodejs12.x
+  memorySize: 256
+  timeout: 28
+  role : endusercrudlambdafunctionrole
+  package:
+    include:
+    - 'business/lambdas/users/get/**'
+
+  ###API methods (you can also declare them in a separate file)
+  events:
+    - http:
+        path: usr/endusers/{key}
+        method: get
+        integration: aws
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            "Fn::ImportValue": ${self:custom.conf.cognitoAuth}
+          claims:
+            - email
+        cors:
+          origin: '*'
+          headers:
+            - Content-Type
+            - X-Amz-Date
+            - Authorization
+            - X-Api-Key
+            - X-Amz-Security-Token
+            - X-Amz-User-Agent
+          allowCredentials: false
+
+

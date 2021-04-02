@@ -1,0 +1,18 @@
+#
+# policy to get parameters from ssm
+#
+Resources:
+  ssmAccessPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: "policy-ssm-get-params-${self:custom.conf.stage}"
+      Path: /
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - 'ssm:GetParameters'
+            Resource:
+              - 'arn:aws:ssm:ap-southeast-1:${self:custom.conf.account_id}:parameter${self:custom.conf.postgresConnectionString}'
+

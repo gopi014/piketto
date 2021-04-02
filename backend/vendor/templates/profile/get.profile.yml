@@ -1,0 +1,39 @@
+#
+# get profile handler configuration and events
+#
+getprofile:
+  handler: lambdas/profile/get/get_profile.handler
+  name: lambda-${self:custom.conf.api_name}-get-profile-${self:custom.conf.stage}
+  description: 'lambda to get profile'
+  runtime: nodejs12.x
+  memorySize: 256
+  timeout: 28
+  role : tablecrudlambdafunctionrole
+  package:
+    include:
+    - 'vendor/lambdas/profile/get/**'
+
+  ###API methods (you can also declare them in a separate file)
+  events:
+    - http:
+        path: api/vendor/profile/{id}
+        method: get
+        integration: aws
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            "Fn::ImportValue": ${self:custom.conf.cognitoAuth}
+          claims:
+            - email 
+        cors:
+          origin: '*'
+          headers:
+            - Content-Type
+            - X-Amz-Date
+            - Authorization
+            - X-Api-Key
+            - X-Amz-Security-Token
+            - X-Amz-User-Agent
+          allowCredentials: false
+
+

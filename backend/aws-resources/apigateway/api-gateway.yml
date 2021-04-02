@@ -1,0 +1,34 @@
+#Deploy one api main resources that can be shared through outputs
+Resources:
+  APIGWPikettoServices:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: api-${self:custom.conf.api_name}-${self:custom.conf.stage}
+      Description: API GW for Piketto Services
+
+
+Outputs:
+  APIIDPikettoServices:
+    Description: API GW for Piketto Services
+    Value:
+      Ref: APIGWPikettoServices
+    Export:
+      Name: api-${self:custom.conf.api_name}-id-${self:custom.conf.stage}
+  APIRootIDPikettoServices:
+    Description: API Root ID for Piketto Services
+    Value:
+      Fn::GetAtt:
+        - APIGWPikettoServices
+        - RootResourceId
+    Export:
+      Name: api-${self:custom.conf.api_name}-rid-${self:custom.conf.stage}
+  ApiUrl:
+    Description: The API Gateway URL
+    Value:
+      Fn::Join:
+        - ""
+        - - "https://"
+          - Ref: APIGWPikettoServices
+          - ".execute-api.${self:provider.region}.amazonaws.com/${self:custom.conf.stage}"
+    Export:
+      Name: api-${self:custom.conf.api_name}-gateway-url-${self:custom.conf.stage}

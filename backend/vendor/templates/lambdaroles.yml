@@ -1,0 +1,23 @@
+#
+# lambda roles resources
+#
+Resources:
+  #
+  # lambda role to perform crud operations on postgres tables
+  #
+  tablecrudlambdafunctionrole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: 'role-lambda-crud-${self:custom.conf.stage}'
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        - "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:policy/policy-ssm-get-params-${self:custom.conf.stage}"

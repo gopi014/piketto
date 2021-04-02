@@ -1,0 +1,38 @@
+#
+# update header handler configuration and events
+#
+updateheader:
+  handler: lambdas/header/update/update_header.handler
+  name: lambda-${self:custom.conf.api_name}-update-header-${self:custom.conf.stage}
+  description: 'lambda to update header'
+  runtime: nodejs12.x
+  memorySize: 256
+  timeout: 28
+  role : tablecrudlambdafunctionrole
+  package:
+    include:
+    - 'vendor/lambdas/header/update/**'
+
+  ###API methods (you can also declare them in a separate file)
+  events:
+    - http:
+        path: api/vendor/header/{id}
+        method: put
+        integration: aws
+        #private: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            "Fn::ImportValue": ${self:custom.conf.cognitoAuth}
+        cors:
+          origin: '*'
+          headers:
+            - Content-Type
+            - X-Amz-Date
+            - Authorization
+            - X-Api-Key
+            - X-Amz-Security-Token
+            - X-Amz-User-Agent
+          allowCredentials: false
+
+

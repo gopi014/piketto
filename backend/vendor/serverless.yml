@@ -1,0 +1,81 @@
+#
+# stack for Piketto vendor apis
+#
+service:
+  name: stack-${self:custom.conf.api_name}-vendor
+#
+# custom variables used in the sls configuration
+#
+custom:
+  conf:
+    stage: ${opt:stage,env:STAGE,'dev'}
+    account_id: ${opt:account_id,env:ACCOUNT_ID, '096084244067'}
+    api_name: ${opt:api_name,env:API_NAME, 'piketto-services'}
+    cognitoAuth: cgauth-piketto-services-${self:custom.conf.account_id}-${self:provider.stage}
+    #apiKey: ${ssm:/app/apigw/apikey/vendor~true}
+    postgresConnectionString: /app/common/${self:custom.conf.stage}/db/connection_string 
+  
+
+  bundle:
+    sourcemaps: true  # Enable source maps
+    caching: true     # Enable Webpack caching
+    stats: true       # Print out any Webpack output
+    linting: true     # Enable linting as a part of the build process
+#
+# provider configurations
+#
+provider:
+  name: aws
+  region: ap-southeast-1
+  runtime: nodejs12.x
+  deploymentBucket: s3-admin-serverless-${self:custom.conf.account_id}-${self:provider.region}
+  stage: ${self:custom.conf.stage}
+  variableSyntax: "\\${((?=self:|env:|opt:|ssm:|s3:|cf:|deep:|file\\()[ ~:a-zA-Z0-9._\\'\",\\-\\/\\(\\)]+?)}"
+  apiGateway:
+    restApiId:
+      Fn::ImportValue: api-${self:custom.conf.api_name}-id-${self:custom.conf.stage}
+    restApiRootResourceId:
+      Fn::ImportValue: api-${self:custom.conf.api_name}-rid-${self:custom.conf.stage}
+  # These environment variables are made available to our functions
+  # under process.env.
+  environment:
+    postgresConnectionString: ${self:custom.conf.postgresConnectionString}
+  # apiKeys:
+  #   - name: apikey-${self:custom.conf.api_name}-vendor-${self:custom.conf.stage}
+  #     value: ${self:custom.conf.apiKey}
+  #     description: API key for business vendor APIs
+
+# Use the serverless-webpack plugin to transpile ES6
+plugins:
+  - serverless-bundle
+# Create an optimized package for our functions
+package:
+  individually: true
+#
+# functions for sls stack
+#
+functions:
+  # menu table functions
+  - ${file(./templates/menu/create.menu.yml)}
+  - ${file(./templates/menu/delete.menu.yml)}
+  - ${file(./templates/menu/get.menu.yml)}
+  - ${file(./templates/menu/list.menu.yml)}
+  - ${file(./templates/menu/update.menu.yml)}
+
+  # menu table functions
+  - ${file(./templates/header/create.header.yml)}
+  - ${file(./templates/header/update.header.yml)}
+
+  # profile table functions
+  - ${file(./templates/profile/create.profile.yml)}
+  - ${file(./templates/profile/delete.profile.yml)}
+  - ${file(./templates/profile/get.profile.yml)}
+  - ${file(./templates/profile/list.profile.yml)}
+  - ${file(./templates/profile/update.profile.yml)}
+  - ${file(./templates/profile/near.by.yml)}
+
+#
+# resources for sls stack
+#
+resources :
+  - ${file(./templates/lambdaroles.yml)}

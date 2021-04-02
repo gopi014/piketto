@@ -1,0 +1,28 @@
+Resources:
+  #
+  # access to cloudwatch logs from API Gateway
+  #
+  ApigwAccessLogRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: 'role-apigw-access-logs-${self:custom.conf.stage}'
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+  #
+  # specifies the IAM role that API Gateway uses to write API logs to Amazon CloudWatch Logs
+  #
+  ApigwAccount:
+    Type: 'AWS::ApiGateway::Account'
+    Properties:
+      CloudWatchRoleArn: !GetAtt
+        - ApigwAccessLogRole
+        - Arn

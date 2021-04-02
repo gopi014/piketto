@@ -1,0 +1,38 @@
+#
+# update menu handler configuration and events
+#
+updatemenu:
+  handler: lambdas/menu/update/update_menu.handler
+  name: lambda-${self:custom.conf.api_name}-update-menu-${self:custom.conf.stage}
+  description: 'lambda to update menu'
+  runtime: nodejs12.x
+  memorySize: 256
+  timeout: 28
+  role : tablecrudlambdafunctionrole
+  package:
+    include:
+    - 'vendor/lambdas/menu/update/**'
+
+  ###API methods (you can also declare them in a separate file)
+  events:
+    - http:
+        path: api/vendor/menu/{id}
+        method: put
+        integration: aws
+        #private: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            "Fn::ImportValue": ${self:custom.conf.cognitoAuth}
+        cors:
+          origin: '*'
+          headers:
+            - Content-Type
+            - X-Amz-Date
+            - Authorization
+            - X-Api-Key
+            - X-Amz-Security-Token
+            - X-Amz-User-Agent
+          allowCredentials: false
+
+

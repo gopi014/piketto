@@ -1,0 +1,44 @@
+service: stack-${self:custom.conf.api_name}-aws-resources
+custom:
+  conf:
+   stage: ${opt:stage,env:STAGE,'dev'}
+   account_id: ${opt:account_id,env:ACCOUNT_ID, '096084244067'}
+   api_name: ${opt:api_name,env:API_NAME, 'piketto-services'}
+   postgresConnectionString: /app/common/${self:custom.conf.stage}/db/connection_string
+   endUserTableName: table-end-user-${self:custom.conf.stage}
+   imagesBucketName: s3-app-piketto-images-${self:custom.conf.account_id}-${self:provider.stage}
+provider:
+  name: aws
+  region: ap-southeast-1
+  logs:
+    restApi:
+     accessLogging: true
+     format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength", "errorValidation":"$context.error.validationErrorString", "errorMessage":"$context.error.messageString","errorType":"$context.error.responseType", "extendedRequestId":"$context.extendedRequestId" }'
+     executionLogging: true
+     level: INFO
+     fullExecutionData: true
+     role: arn:aws:iam::${self:custom.conf.account_id}:role/role-apigw-access-logs-${self:custom.conf.stage}
+     roleManagedExternally: true
+  deploymentBucket: s3-admin-serverless-${self:custom.conf.account_id}-${self:provider.region}
+  stage: ${self:custom.conf.stage}
+  variableSyntax: "\\${((?=self:|env:|opt:|ssm:|s3:|cf:|deep:|file\\()[ ~:a-zA-Z0-9._\\'\",\\-\\/\\(\\)]+?)}"
+
+pikettoAppSyncApi : ${file(appsync/appsync.yml):pikettoAppSyncApi}
+resources:
+  # API Gateway
+  - ${file(apigateway/api-gateway-roles.yml)}
+  - ${file(apigateway/api-gateway.yml)}
+  # Cognito Authorizer
+  - ${file(cognitoauthorizer/cognito-authorizer.yml)}
+  - ${file(cognitoauthorizer/cognito-authorizer-client.yml)}
+    # ssm paramaters policy
+  - ${file(ssmstores/getssmparameters.yml)}
+  # User Table
+  - ${file(dynamodb/dynamodb-user-table.yml)}
+  - ${file(dynamodb/dynamodb-user-table-policies.yml)}
+  #S3 buckets
+    # images
+  - ${file(s3buckets/s3-images-bucket.yml)}
+  - ${file(s3buckets/s3-images-bucket-policies.yml)}
+ 
+

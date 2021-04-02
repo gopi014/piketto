@@ -1,0 +1,38 @@
+#
+# create menu handler configuration and events
+#
+createmenu:
+  handler: lambdas/menu/create/create_menu.handler
+  name: lambda-${self:custom.conf.api_name}-create-menu-${self:custom.conf.stage}
+  description: 'lambda to create menu'
+  runtime: nodejs12.x
+  memorySize: 256
+  timeout: 28
+  role : tablecrudlambdafunctionrole
+  package:
+    include:
+    - 'vendor/lambdas/menu/create/**'
+
+  ###API methods (you can also declare them in a separate file)
+  events:
+    - http:
+        path: api/vendor/menu
+        method: post
+        integration: aws
+        #private: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            "Fn::ImportValue": ${self:custom.conf.cognitoAuth}
+        cors:
+          origin: '*'
+          headers:
+            - Content-Type
+            - X-Amz-Date
+            - Authorization
+            - X-Api-Key
+            - X-Amz-Security-Token
+            - X-Amz-User-Agent
+          allowCredentials: false
+
+

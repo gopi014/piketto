@@ -1,0 +1,37 @@
+#
+# list menu handler configuration and events
+#
+listmenu:
+  handler: lambdas/menu/list/list_menu.handler
+  name: lambda-${self:custom.conf.api_name}-list-menu-${self:custom.conf.stage}
+  description: 'lambda to list menu'
+  runtime: nodejs12.x
+  memorySize: 256
+  timeout: 28
+  role : tablecrudlambdafunctionrole
+  package:
+    include:
+    - 'vendor/lambdas/menu/list/**'
+
+  ###API methods (you can also declare them in a separate file)
+  events:
+    - http:
+        path: api/vendor/menu/{id}/{branchId}
+        method: get
+        integration: aws
+        # authorizer:
+        #   type: COGNITO_USER_POOLS
+        #   authorizerId:
+        #     "Fn::ImportValue": ${self:custom.conf.cognitoAuth}
+        cors:
+          origin: '*'
+          headers:
+            - Content-Type
+            - X-Amz-Date
+            - Authorization
+            - X-Api-Key
+            - X-Amz-Security-Token
+            - X-Amz-User-Agent
+          allowCredentials: false
+
+

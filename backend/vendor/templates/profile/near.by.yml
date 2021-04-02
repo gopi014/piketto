@@ -1,0 +1,37 @@
+#
+# list near by profile handler configuration and events
+#
+nearbyprofile:
+  handler: lambdas/profile/nearBy/near_by.handler
+  name: lambda-${self:custom.conf.api_name}-list-near-by-profile-${self:custom.conf.stage}
+  description: 'lambda to list near by profiles'
+  runtime: nodejs12.x
+  memorySize: 256
+  timeout: 28
+  role : tablecrudlambdafunctionrole
+  package:
+    include:
+    - 'vendor/lambdas/profile/nearBy/**'
+
+  ###API methods (you can also declare them in a separate file)
+  events:
+    - http:
+        path: api/user/nearby
+        method: get
+        integration: aws
+        # authorizer:
+        #   type: COGNITO_USER_POOLS
+        #   authorizerId:
+        #     "Fn::ImportValue": ${self:custom.conf.cognitoAuth}
+        cors:
+          origin: '*'
+          headers:
+            - Content-Type
+            - X-Amz-Date
+            - Authorization
+            - X-Api-Key
+            - X-Amz-Security-Token
+            - X-Amz-User-Agent
+          allowCredentials: false
+
+

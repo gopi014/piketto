@@ -1,0 +1,39 @@
+#
+# update user handler configuration and events
+#
+updateuser:
+  handler: lambdas/users/update/update_users.handler
+  name: lambda-${self:custom.conf.api_name}-update-end-users-${self:custom.conf.stage}
+  description: 'lambda to update end user'
+  runtime: nodejs12.x
+  memorySize: 256
+  timeout: 28
+  role : endusercrudlambdafunctionrole
+  package:
+    include:
+    - 'business/lambdas/users/update/**'
+
+  ###API methods (you can also declare them in a separate file)
+  events:
+    - http:
+        path: usr/endusers/{key}
+        method: put
+        integration: aws
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            "Fn::ImportValue": ${self:custom.conf.cognitoAuth}
+          claims:
+            - email
+        cors:
+          origin: '*'
+          headers:
+            - Content-Type
+            - X-Amz-Date
+            - Authorization
+            - X-Api-Key
+            - X-Amz-Security-Token
+            - X-Amz-User-Agent
+          allowCredentials: false
+
+
