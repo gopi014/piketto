@@ -1,0 +1,54 @@
+type Mutation {
+	# Create a Order
+	createOrder(
+		message: String!,
+		level: String!,
+		last_modified: String
+	): Order!
+
+	# Delete Order
+	deleteOrder(
+		id: String!
+	): Order!
+
+	# Update Order
+	updateOrder(
+    id: String!,
+    message: String!
+  ): Order!
+}
+
+type Order {
+	id: String!
+	level: String!
+	message: String!
+	last_modified: String!
+}
+
+type OrdersList {
+	Orders: [Order!]!
+	nextToken: String
+}
+
+type Subscription {
+	onCreateOrder: Order
+		@aws_subscribe(mutations: ["createOrder"])
+
+	onUpdateOrder: Order
+		@aws_subscribe(mutations: ["updateOrder"])
+
+	onDeleteOrder: Order
+		@aws_subscribe(mutations: ["deleteOrder"])
+}
+
+type Query {
+	listAllOrders (limit: Int, nextToken: String): OrdersList!
+	listOrdersByLevel (level: String!, limit: Int, nextToken: String): OrdersList!
+	getOrder (id: ID!): Order
+}
+
+schema {
+	query: Query
+	mutation: Mutation
+	subscription: Subscription
+}

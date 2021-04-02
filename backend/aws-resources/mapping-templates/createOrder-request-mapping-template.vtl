@@ -1,0 +1,12 @@
+{
+  "version" : "2017-02-28",
+  "operation" : "PutItem",
+  "key" : {
+    "id" : { "S" : "$util.autoId()" }
+  },
+  "attributeValues" : {
+    "message" : { "S" : "${context.arguments.message}" },
+    "level": { "S" : "${context.arguments.level}" },
+    "last_modified" : { "S" : "$util.time.nowISO8601()" }
+  }
+}

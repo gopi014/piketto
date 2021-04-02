@@ -1,0 +1,27 @@
+#
+# Policy to read and write in the orders table (dynamodb)
+#
+Resources:
+  OrdersTableReadWritePolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: "policy-orders-table-access-${self:custom.conf.stage}"
+      Path: /
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "dynamodb:BatchGetItem"
+              - "dynamodb:BatchWriteItem"
+              - "dynamodb:DeleteItem"
+              - "dynamodb:DescribeTable"
+              - "dynamodb:GetItem"
+              - "dynamodb:GetRecords"
+              - "dynamodb:PutItem"
+              - "dynamodb:Query"
+              - "dynamodb:Scan"
+              - "dynamodb:UpdateItem"
+            Resource:
+              - "Fn::Sub": 'arn:aws:dynamodb:*:${AWS::AccountId}:table/${self:custom.conf.ordersTableName}'
+              - "Fn::Sub": 'arn:aws:dynamodb:*:${AWS::AccountId}:table/${self:custom.conf.ordersTableName}/index/*'

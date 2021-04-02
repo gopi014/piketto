@@ -1,0 +1,40 @@
+#
+# orders table in dynamodb for piketto order management
+#
+Resources:
+  OrdersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${self:custom.conf.ordersTableName}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: vendorId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: userId
+          KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: vendorId
+          KeySchema:
+            - AttributeName: vendorId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+Outputs:
+  OrdersTableArn:
+    Value:
+      Fn::GetAtt:
+      - OrdersTable
+      - Arn
+    Export:
+      Name: table-${self:custom.conf.api_name}-OrdersTableArn-${self:custom.conf.stage}

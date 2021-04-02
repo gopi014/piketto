@@ -1,0 +1,34 @@
+Resources:
+  AppSyncDynamoDBServiceRole:
+    Type: AWS::IAM::Role
+    DependsOn:
+      - OrdersTableReadWritePolicy
+    Properties:
+      RoleName: 'role-appsync-ddb-${self:custom.conf.stage}'
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - appsync.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:policy/policy-orders-table-access-${self:custom.conf.stage}"
+  AppSyncLoggingServiceRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: 'role--appsync-cloudwatch-${self:custom.conf.stage}'
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - appsync.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSAppSyncPushToCloudWatchLogs"

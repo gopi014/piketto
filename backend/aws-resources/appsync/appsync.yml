@@ -1,0 +1,58 @@
+appSync:
+  name: appsync-orders-${self:custom.conf.stage}
+  authenticationType: AMAZON_COGNITO_USER_POOLS
+  userPoolConfig:
+    awsRegion: ${self:provider.region}
+    defaultAction: ALLOW
+    userPoolId: ${self:provider.region}_ARwjrtObt # hardcoded user pool ID to be imported
+  # mappingTemplatesLocation: # defaults to mapping-templates
+  mappingTemplates:
+    - dataSource: Orders
+      type: Mutation
+      field: createOrder
+      request: "createOrder-request-mapping-template.vtl"
+      response: "createOrder-response-mapping-template.vtl"
+    - dataSource: Orders
+      type: Mutation
+      field: deleteOrder
+      request: "deleteOrder-request-mapping-template.vtl"
+      response: "deleteOrder-response-mapping-template.vtl"
+    - dataSource: Orders
+      type: Mutation
+      field: updateOrder
+      request: "updateOrder-request-mapping-template.vtl"
+      response: "updateOrder-response-mapping-template.vtl"
+    - dataSource: Orders
+      type: Query
+      field: getOrder
+      request: "getOrder-request-mapping-template.vtl"
+      response: "getOrder-response-mapping-template.vtl"
+    - dataSource: Orders
+      type: Query
+      field: listAllOrders
+      request: "listAllOrders-request-mapping-template.vtl"
+      response: "listAllOrders-response-mapping-template.vtl"
+    - dataSource: Orders
+      type: Query
+      field: listOrdersByLevel
+      request: "listOrdersByLevel-request-mapping-template.vtl"
+      response: "listOrdersByLevel-response-mapping-template.vtl"
+  # schema: # defaults schema.graphql
+  dataSources:
+    - type: AMAZON_DYNAMODB
+      name: Orders
+      description: 'orders table'
+      config:
+        tableName:
+          Ref: OrdersTable
+        serviceRoleArn:
+          Fn::GetAtt:
+            - AppSyncDynamoDBServiceRole
+            - Arn
+  logConfig:
+    loggingRoleArn:
+      Fn::GetAtt:
+        - AppSyncLoggingServiceRole
+        - Arn
+    level: ERROR # Logging Level: NONE | ERROR | ALL
+    excludeVerboseContent: false

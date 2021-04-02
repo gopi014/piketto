@@ -1,0 +1,21 @@
+{
+  "version": "2017-02-28",
+  "operation": "Query",
+  "query" : {
+    "expression": "#level = :level",
+    "expressionNames": {
+        "#level" : "level"
+    },
+    "expressionValues": {
+      ":level" : $util.dynamodb.toDynamoDBJson($context.arguments.level)
+    }
+  },
+  "index": "level-index",
+  "scanIndexForward": false
+  #if( ${context.arguments.limit} )
+    ,"limit": $util.toJson($context.arguments.limit)
+  #end
+  #if( ${context.arguments.nextToken} )
+    ,"nextToken": $util.toJson($context.arguments.nextToken)
+  #end
+}

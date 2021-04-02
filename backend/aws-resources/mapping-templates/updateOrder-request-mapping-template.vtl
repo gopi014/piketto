@@ -1,0 +1,14 @@
+{
+  "version" : "2017-02-28",
+  "operation" : "UpdateItem",
+  "key" : {
+    "id" : { "S" : "${context.arguments.id}" }
+  },
+  "update" : {
+    "expression" : "SET message = :message, last_modified = :last_modified",
+    "expressionValues": {
+      ":message" : { "S" : "${context.arguments.message}" },
+      ":last_modified" : { "S" : "$util.time.nowISO8601()" }
+    }
+  }
+}
