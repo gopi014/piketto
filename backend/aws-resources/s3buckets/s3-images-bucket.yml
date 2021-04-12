@@ -30,6 +30,11 @@ Resources:
               - POST
               - DELETE
               - HEAD
+            # ExposeHeaders:
+            #   - x-amz-server-side-encryption
+            #   - x-amz-request-id
+            #   - x-amz-id-2
+            #   - ETag
             MaxAge: 3000
 
 # export the name and arn of the bucket that is created

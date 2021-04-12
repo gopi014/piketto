@@ -10,7 +10,8 @@ Resources:
       RestApiId:
         Ref: APIGWPikettoServices
       ProviderARNs:
-        - arn:aws:cognito-idp:${self:provider.region}:${self:custom.conf.account_id}:userpool/ap-southeast-1_J8wW1RKK7
+        # - arn:aws:cognito-idp:${self:provider.region}:${self:custom.conf.account_id}:userpool/ap-southeast-1_J8wW1RKK7
+        - "Fn::ImportValue": ${self:custom.conf.cognitoVendorArn}
       #   - arn of the cognito user pool to be updated here
 Outputs:
   CognitoAuthorizer:

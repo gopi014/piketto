@@ -1,0 +1,90 @@
+#cognito user pool for Client app
+Resources:
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: cgauth-${self:custom.conf.account_id}-${self:provider.stage}-client
+      UsernameAttributes:
+        - email
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: True
+        UnusedAccountValidityDays: 7
+      UsernameConfiguration:
+        CaseSensitive: False
+      AutoVerifiedAttributes:
+        - email
+      Schema:
+        - Mutable: false
+          Name: email
+          Required: true
+        - Mutable: false
+          Name: name
+          Required: true
+        - Mutable: false
+          Name: phone_number
+          Required: true
+
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: True
+          RequireNumbers: True
+          RequireSymbols: True
+          RequireUppercase: True
+  
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    UpdateReplacePolicy: Delete
+    Properties:
+      Domain: piketto-pro-client
+      UserPoolId: !Ref CognitoUserPoolClient
+
+  CognitoUserPoolClientEndUser:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      # Generate an app client name based on the stage
+      ClientName: cgauth-user-pool-client-${self:custom.conf.account_id}-${self:provider.stage}-end-user
+      UserPoolId:
+        Ref: CognitoUserPoolClient
+      ExplicitAuthFlows:
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      GenerateSecret: false
+      RefreshTokenValidity: "30"
+      CallbackURLs:
+        - http://localhost:3000/
+      LogoutURLs: 
+        - http://localhost:3000/
+      AllowedOAuthFlows: 
+        - code
+        - implicit
+      AllowedOAuthScopes:
+       - phone
+       - email
+       - openid
+       - profile
+       - aws.cognito.signin.user.admin
+      AllowedOAuthFlowsUserPoolClient: True
+      PreventUserExistenceErrors: ENABLED
+      SupportedIdentityProviders: 
+       - COGNITO
+Outputs:
+  UserPoolIdClient:
+    Value:
+      Ref: CognitoUserPoolClient
+ 
+  UserPoolClientIdClient:
+    Value:
+      Ref: CognitoUserPoolClientEndUser
+  UserPoolArnClient:
+    Value:
+      Fn::GetAtt:
+      - CognitoUserPoolClient
+      - Arn
+    Export:
+      Name: ${self:custom.conf.cognitoClientArn}

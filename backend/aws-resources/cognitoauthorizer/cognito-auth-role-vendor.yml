@@ -1,0 +1,97 @@
+# IAM role used for authenticated users
+Resources:
+  CognitoUnAuthRole:
+    Type: AWS::IAM::Role
+    Properties:
+        RoleName: 'role-cognito-unauth-user-${self:custom.conf.stage}'
+        Path: /
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Federated: cognito-identity.amazonaws.com
+              Action:
+                - sts:AssumeRoleWithWebIdentity
+              Condition:
+                StringEquals:
+                  cognito-identity.amazonaws.com:aud:
+                    Ref: CognitoIdentityPool
+                ForAnyValue:StringLike:
+                  cognito-identity.amazonaws.com:amr: unauthenticated
+        Policies:
+          - PolicyName: policy-unauth-user-${self:custom.conf.stage}
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - mobileanalytics:PutEvents
+                    - cognito-sync:*
+                    - cognito-identity:*
+                  Resource: "*"
+                # Allow users to upload attachments to their
+                # folder inside our S3 bucket
+                - Effect: Allow
+                  Action:
+                    - s3:GetObject
+                    - s3:PutObject
+                    - s3:DeleteObject
+                  Resource:
+                    - Fn::Join: [
+                      "", [
+                          "arn:aws:s3:::",
+                          {
+                            "Ref" : S3ImagesBucket
+                           },
+                           /public/*
+                        ]
+                      ]
+                    
+                - Effect: Allow
+                  Action:
+                    - s3:PutObject
+                  Resource:
+                    - Fn::Join: [
+                      "", [
+                          "arn:aws:s3:::",
+                          {
+                            "Ref" : S3ImagesBucket
+                           },
+                           /uploads/*
+                        ]
+                      ]
+
+                - Effect: Allow
+                  Action:
+                    - s3:GetObject
+                  Resource:
+                    - Fn::Join: [
+                      "", [
+                          "arn:aws:s3:::",
+                          {
+                            "Ref" : S3ImagesBucket
+                           },
+                           /protected/*
+                        ]
+                      ]
+                - Effect: Allow
+                  Action:
+                    - s3:ListBucket
+                  Resource:
+                    - Fn::Join: [
+                      "", [
+                          "arn:aws:s3:::",
+                          {
+                            "Ref" : S3ImagesBucket
+                           }
+                        ]
+                      ]
+                  Condition:
+                    StringLike:
+                     s3:prefix:
+                        - public/
+                        - public/*
+                        - protected/
+                        - protected/*
+                    

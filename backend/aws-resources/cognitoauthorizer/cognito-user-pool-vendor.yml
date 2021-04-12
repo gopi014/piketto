@@ -1,0 +1,134 @@
+#cognito user pool for vendor app
+Resources:
+  CognitoUserPoolVendor:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: cgauth-${self:custom.conf.account_id}-${self:provider.stage}-vendor
+      UsernameAttributes:
+        - email
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: True
+        UnusedAccountValidityDays: 7
+      UsernameConfiguration:
+        CaseSensitive: False
+      AutoVerifiedAttributes:
+        - email
+      Schema:
+        - Mutable: false
+          Name: email
+          Required: true
+        - Mutable: false
+          Name: name
+          Required: true
+        - Mutable: false
+          Name: phone_number
+          Required: true
+
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: True
+          RequireNumbers: True
+          RequireSymbols: True
+          RequireUppercase: True
+
+  CognitoUserPoolClientVendor:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      # Generate an app client name based on the stage
+      ClientName: cgauth-user-pool-client-${self:custom.conf.account_id}-${self:provider.stage}-vendor
+      UserPoolId:
+        Ref: CognitoUserPoolVendor
+      ExplicitAuthFlows:
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      GenerateSecret: false
+      RefreshTokenValidity: "30"
+      CallbackURLs:
+        - http://localhost:3000/
+      LogoutURLs: 
+        - http://localhost:3000/
+      AllowedOAuthFlows: 
+        - code
+        - implicit
+      AllowedOAuthScopes:
+       - phone
+       - email
+       - openid
+       - profile
+       - aws.cognito.signin.user.admin
+      AllowedOAuthFlowsUserPoolClient: True
+      PreventUserExistenceErrors: ENABLED
+      SupportedIdentityProviders: 
+       - COGNITO
+
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    UpdateReplacePolicy: Delete
+    Properties:
+      Domain: piketto-pro-vendor
+      UserPoolId: !Ref CognitoUserPoolVendor
+
+  CognitoIdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      # Generate a name based on the stage
+      IdentityPoolName: cgauth_identity_pool_${self:custom.conf.account_id}_${self:provider.stage}
+      # Don't allow unathenticated users
+      AllowUnauthenticatedIdentities: true
+      # Link to our User Pool
+      CognitoIdentityProviders:
+        - ClientId:
+            Ref: CognitoUserPoolClientVendor
+          ProviderName:
+            Fn::GetAtt: 
+              - CognitoUserPoolVendor
+              - ProviderName
+        # - ClientId:
+        #     Ref: CognitoUserPoolClientEndUser
+        #   ProviderName:
+        #     Fn::GetAtt: 
+        #       - CognitoUserPoolClient
+        #       - ProviderName
+
+  # IAM roles
+  CognitoIdentityPoolRoles:
+    Type: AWS::Cognito::IdentityPoolRoleAttachment
+    Properties:
+      IdentityPoolId:
+        Ref: CognitoIdentityPool
+      Roles:
+        authenticated:
+          Fn::GetAtt: 
+            - CognitoAuthRole
+            - Arn
+        unauthenticated:
+          Fn::GetAtt: 
+            - CognitoUnAuthRole
+            - Arn
+
+Outputs:
+  UserPoolId:
+    Value:
+      Ref: CognitoUserPoolVendor
+ 
+  UserPoolClientId:
+    Value:
+      Ref: CognitoUserPoolClientVendor
+ 
+  IdentityPoolId:
+    Value:
+      Ref: CognitoIdentityPool
+  UserPoolArn:
+    Value:
+      Fn::GetAtt:
+      - CognitoUserPoolVendor
+      - Arn
+    Export:
+      Name: ${self:custom.conf.cognitoVendorArn}
+  
